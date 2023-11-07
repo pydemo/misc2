@@ -1,0 +1,26 @@
+import psycopg2
+
+# Replace these values with your connection details
+conn_string = "dbname='your_dbname' port='5439' user='your_user' password='your_password' host='your_cluster_endpoint'"
+
+# Connect to Redshift
+try:
+    conn = psycopg2.connect(conn_string)
+    print("Connected to Redshift!")
+
+    # Open a cursor to perform database operations
+    cursor = conn.cursor()
+
+    # Execute a query
+    cursor.execute("SELECT * FROM your_table LIMIT 10;")
+
+    # Retrieve query results
+    records = cursor.fetchall()
+    print(records)
+
+    # Close the cursor and connection
+    cursor.close()
+    conn.close()
+
+except Exception as ex:
+    print("Connection failed: {0}".format(ex))
