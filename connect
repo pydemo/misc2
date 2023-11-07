@@ -1,26 +1,35 @@
-import psycopg2
+import logging
+import redshift_connector
 
-# Replace these values with your connection details
-conn_string = "dbname='your_dbname' port='5439' user='your_user' password='your_password' host='your_cluster_endpoint'"
+# Set up logging to capture notices/warnings for redshift_connector
+logger = logging.getLogger('redshift_connector')
+logger.setLevel(logging.INFO)
+
+log_stream = logging.StreamHandler()
+logger.addHandler(log_stream)
 
 # Connect to Redshift
-try:
-    conn = psycopg2.connect(conn_string)
-    print("Connected to Redshift!")
+conn = redshift_connector.connect(
+    host='your_cluster_endpoint',
+    database='your_dbname',
+    user='your_user',
+    password='your_password',
+    port=5439
+)
 
-    # Open a cursor to perform database operations
-    cursor = conn.cursor()
+with conn.cursor() as cursor:
+    try:
+        # Execute the stored procedure
+        cursor.execute("CALL procedure_name( /* procedure arguments if any */ );")
+        conn.commit()
 
-    # Execute a query
-    cursor.execute("SELECT * FROM your_table LIMIT 10;")
+        # After the call, you might find the notices/warnings in the log_stream
+        # You would need to implement a way to filter or capture the output from the log_stream
 
-    # Retrieve query results
-    records = cursor.fetchall()
-    print(records)
+    except redshift_connector.Error as e:
+        print(f"An error occurred: {e}")
+    finally:
+        conn.close()
 
-    # Close the cursor and connection
-    cursor.close()
-    conn.close()
-
-except Exception as ex:
-    print("Connection failed: {0}".format(ex))
+# Example of handling the log_stream content here:
+# You would need to implement the code to read from log_stream and extract the messages.
